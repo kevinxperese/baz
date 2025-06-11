@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>webpage</title>
+</head>
+<body>
+    <script src="d3.min.js"></script>
+
+    <div class="chart-container">
+        <h1>Monthly Sales Data</h1>
+        <!-- The SVG element where the chart will be drawn -->
+        <svg id="bar-chart"></svg>
+    </div>
+
+    <!-- D3.js library from a CDN -->
+    <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
+
+    <script>
+        // --- 1. DATA ---
+        // Inlined data for our bar chart. Each object has a category (month) and a value.
+        const dataset = [
+            { month: 'Jan', value: 65 },
+            { month: 'Feb', value: 59 },
+            { month: 'Mar', value: 80 },
+            { month: 'Apr', value: 81 },
+            { month: 'May', value: 56 },
+            { month: 'Jun', value: 55 },
+            { month: 'Jul', value: 40 },
+            { month: 'Aug', value: 98 },
+            { month: 'Sep', value: 62 },
+            { month: 'Oct', value: 75 }
+        ];
+
+        // --- 2. SETUP ---
+        // Define margins, width, and height for the chart.
+        // Margins create space around the chart for axes and labels.
+        const margin = { top: 20, right: 20, bottom: 50, left: 60 };
+        const width = 700 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        // Select the SVG element and set its dimensions.
+        // We use a group <g> element to apply the margins easily.
+        const svg = d3.select("#bar-chart")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        // --- 3. SCALES ---
+        // Scales map our data domain (e.g., months, values) to the chart's range (pixels).
+
+        // X-axis scale: A band scale for categorical data (months).
+        const xScale = d3.scaleBand()
+            .domain(dataset.map(d => d.month)) // Input domain: an array of month names
+            .range([0, width]) // Output range: the width of the chart
+            .padding(0.2); // Adds space between the bars
+
+        // Y-axis scale: A linear scale for numerical data (values).
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(dataset, d => d.value) + 10]) // Input domain: from 0 to the max value (+10 for padding)
+            .range([height, 0]); // Output range: the height of the chart (inverted for SVG y-coordinates)
+
+        // --- 4. AXES ---
+        // Create the axes based on our scales.
+
+        // X-axis
+        const xAxis = d3.axisBottom(xScale);
+        svg.append("g")
+            .attr("transform", `translate(0, ${height})`) // Position at the bottom
+            .call(xAxis);
+
+        // Y-axis
+        const yAxis = d3.axisLeft(yScale);
+        svg.append("g")
+            .call(yAxis);
+
+        // Add X-axis label
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("text-anchor", "middle")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom - 10)
+            .text("Month");
+
+        // Add Y-axis label
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -margin.left + 20)
+            .attr("x", -height / 2)
+            .text("Sales Value");
+
+        // --- 5. BARS ---
+        // Draw the rectangles (bars) for the chart.
+
+        svg.selectAll(".bar")
+            .data(dataset) // Bind the data
+            .enter()       // Create a placeholder for each data point
+            .append("rect") // Append a rectangle for each placeholder
+            .attr("class", "bar")
+            .attr("x", d => xScale(d.month)) // Position the bar on the x-axis
+            .attr("y", d => yScale(d.value)) // Position the bar on the y-axis
+            .attr("width", xScale.bandwidth()) // Set the width of the bar
+            .attr("height", d => height - yScale(d.value)); // Set the height of the bar
+
+    </script>
+</body>
+</html>
